@@ -8,10 +8,10 @@
 3. 只支持export default
 
 ## 使用
-遵从限制放好文件之后, 在项目根目录输入`node app.js`进行打包, 打包输出文件为`main.js`
+符合限制地完成各个模块之后, 在项目根目录输入`node app.js`进行打包, 打包输出文件为`main.js`
 
 
-## 打包完成的main.js类似（已格式化）
+## 打包完成的main.js示例（已格式化）
 ```js
 (function (modules) {
   // cache imported modules
