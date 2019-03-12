@@ -19,18 +19,42 @@ function next () {
         let result
         if ((result = importRe.exec(line))) {
           filesNeedToVisited.push(result[2])
-          return `let ${result[1]} = helpMeImport(${result[2]})`
+          return `let ${result[1]} = _import('${result[2]}')`
         } else if ((result = exportRe.exec(line))) {
-          return `helpMeExport(${result[1]})`
+          return `_export(${result[1]})`
         } else {
           return line
         }
       }).join('\n')
-      console.log(newContent)
-      filesAlreadyVisited[file] = newContent
+      filesAlreadyVisited[file] =
+        `function (_import, _export) {
+          ${newContent}
+        }`
     }).then(next)
 }
 
 next().then(() => {
-  console.log(filesAlreadyVisited)
+  let fileObj = '{\n'
+  for (const file of Object.keys(filesAlreadyVisited)) {
+    fileObj += `'${file}': ${filesAlreadyVisited[file]},\n`
+  }
+  fileObj += '\n}'
+  const functionContent =
+  `
+  // cache imported modules
+  const importedModules = {}
+
+  function _import (file) {
+    if (!importedModules[file]) {
+      modules[file].call(null, _import, (module) => {
+        importedModules[file] = module
+      })
+    }
+    return importedModules[file]
+  }
+
+  _import('./index.js')
+  `
+  let output = `(function(modules){${functionContent}})(${fileObj})`
+  fsPromises.writeFile('main.js', output)
 })
